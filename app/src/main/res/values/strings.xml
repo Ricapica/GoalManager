@@ -1,0 +1,22 @@
+<resources>
+    <!--APP-->
+    <string name="app_name">GoalManager</string>
+
+    <!--MainActivity-->
+    <string name="new_goal_button">New Goal</string>
+
+    <!--addButton_popup-->
+    <string name="addButton_header">Add Goal:</string>
+    <string name="addButton_goal_title_hint">Goal Title</string>
+    <string name="addButton_goal_body_hint">Goal Description</string>
+    <string name="addButton_confirm">Add</string>
+    <string name="addButton_cancel">Cancel</string>
+
+    <!--modifyGoal_popup-->
+    <string name="modifyGoal_header">Modify Goal:</string>
+    <string name="modifyGoal_goal_title_hint">Goal Title</string>
+    <string name="modifyGoal_goal_body_hint">Goal Description</string>
+    <string name="modifyGoal_confirm">Modify</string>
+    <string name="modifyGoal_cancel">Cancel</string>
+
+</resources>
