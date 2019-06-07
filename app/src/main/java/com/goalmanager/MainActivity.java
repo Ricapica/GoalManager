@@ -16,6 +16,9 @@ import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+
+import com.goalmanager.Views.GoalButton;
+
 import java.util.ArrayList;
 import java.util.Objects;
 
@@ -53,7 +56,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
-                Log.e("Rica", "clicked "+ b.getLabelText());
+                Log.e("Rica", "clicked "+ b.goal.title);
                 //TODO take use to an activity corresponding to goal.
 
             }
@@ -65,13 +68,14 @@ public class MainActivity extends AppCompatActivity {
             public boolean onLongClick(View v) {
                 final Dialog dialog = new Dialog(context);
                 dialog.setContentView(R.layout.modifygoal_popup);
-                final Button add = dialog.findViewById(R.id.confirm_button);
+
                 ((EditText)dialog.findViewById(R.id.goalTitle)).setText(b.goal.title);
                 ((EditText)dialog.findViewById(R.id.goalBody)).setText(b.goal.subtitle);
 
                 (dialog.findViewById(R.id.goalTitle)).requestFocus();
                 Objects.requireNonNull(dialog.getWindow()).setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE);
 
+                final Button add = dialog.findViewById(R.id.confirm_button);
                 add.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
@@ -82,6 +86,7 @@ public class MainActivity extends AppCompatActivity {
                             Log.e("Rica","Modifying it: ");
                             b.goal.title = goalTitle;
                             b.goal.subtitle = goalBody;
+                            showGoalButtons(context);
                             dialog.dismiss();
                         }
                     }
@@ -101,6 +106,42 @@ public class MainActivity extends AppCompatActivity {
 
 
                 return true;
+            }
+        });
+
+        b.deleteButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                final Dialog dialog = new Dialog(context);
+                dialog.setContentView(R.layout.deletegoal_popup);
+
+                final Button confirm_delete = dialog.findViewById(R.id.confirm_delete_button);
+
+                confirm_delete.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        Log.e("Rica"," Deleting");
+                        goals.remove(b.goal);
+                        showGoalButtons(context);
+                        dialog.dismiss();
+                    }
+                });
+
+                final Button cancel = dialog.findViewById(R.id.cancel_delete_button);
+                cancel.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        dialog.dismiss();
+                    }
+                });
+                if(dialog.getWindow() != null) {
+                    dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+                }
+                dialog.show();
+
+
+
             }
         });
     }
