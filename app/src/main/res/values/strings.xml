@@ -20,7 +20,7 @@
     <string name="modifyGoal_cancel">Cancel</string>
 
     <!--deleteGoal_popup-->
-    <string name="deleteGoal_header">Are you sure you want to DELETE this goal?</string>
+    <string name="deleteGoal_header">Confirm DELETING this goal.</string>
     <string name="deleteGoal_confirm">Delete</string>
     <string name="deleteGoal_cancel">Cancel</string>
 
