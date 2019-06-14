@@ -4,6 +4,7 @@
 
     <!--MainActivity-->
     <string name="new_goal_button">New Goal</string>
+    <string name="goal_view_delete">Delete</string>
 
     <!--addButton_popup-->
     <string name="addButton_header">Add Goal:</string>
@@ -25,6 +26,10 @@
     <string name="deleteGoal_cancel">Cancel</string>
 
     <!--Goal View-->
-    <string name="goal_view_delete">Delete</string>
+    <string name="category_title">Category:</string>
+    <string name="type_title">Type:</string>
 
+    <!--SharedPrefs-->
+    <string name="shared_goals">goals</string>
+    <string name="shared_categories">categories</string>
 </resources>

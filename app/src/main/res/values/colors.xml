@@ -6,6 +6,9 @@
 
     <color name="black">#000000</color>
     <color name="white">#ffffff</color>
+    <color name="EEGrey">#eeeeee</color>
+    <color name="DarkestGrey">#222222</color>
+    <color name="DarkerGrey">#444444</color>
     <color name="button_text">#111111</color>
     <color name="button">#f3f3f3</color>
     <color name="delete_button">#e3e3e3</color>

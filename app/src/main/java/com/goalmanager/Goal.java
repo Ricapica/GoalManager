@@ -14,9 +14,13 @@ import androidx.annotation.NonNull;
 public class Goal {
     public String title;
     public String subtitle;
-//    public String category;
+    public String category;
 
     Goal(String title, String subtitle){
+        this.title = title;
+        this.subtitle = subtitle;
+    }
+    Goal(String title, String subtitle, String category){
         this.title = title;
         this.subtitle = subtitle;
     }
@@ -25,6 +29,7 @@ public class Goal {
     @Override
     public String toString() {
         return "Title: "+title+
-                " Description: "+subtitle;
+                " Description: "+subtitle+
+                " Category: "+category;
     }
 }

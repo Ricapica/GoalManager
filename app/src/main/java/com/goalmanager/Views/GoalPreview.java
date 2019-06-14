@@ -60,10 +60,11 @@ public class GoalPreview extends View {
         paint.setTextAlign(Paint.Align.LEFT);
         paint.setTextSize((int)(viewHeight/3f));
 
-        canvas.drawText(goalTitle, (int)(viewWidth/25f), (int)(viewHeight/4*1.25), paint);
+        canvas.drawText((goalTitle.length()>22)?goalTitle.substring(0,22)+"…":goalTitle, (int)(viewWidth/25f), (int)(viewHeight/4*1.25), paint);
 
         paint.setTextSize((int)(viewHeight/4f));
-        canvas.drawText(goalDescription, (int)(viewWidth/25f), (int)(viewHeight/4*1.25)*2, paint);
+        paint.setColor(context.getColor(R.color.DarkerGrey));
+        canvas.drawText((goalDescription.length()>34)?goalDescription.substring(0,34)+"…":goalDescription, (int)(viewWidth/25f), (int)(viewHeight/4*1.25)*2, paint);
 
     }
 
