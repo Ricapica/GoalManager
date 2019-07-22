@@ -12,6 +12,9 @@
     <color name="button_text">#111111</color>
     <color name="button">#f3f3f3</color>
     <color name="delete_button">#e3e3e3</color>
-    <color name="add_button">#ff6666</color>
+    <color name="add_goal_button">#ff6666</color>
+    <color name="add_category_button">#6666ff</color>
+    <color name="week_day_color">#ff6600</color>
+    <color name="goal_complete_color">#ffdd66</color>
 
 </resources>

@@ -9,6 +9,7 @@ import android.view.View;
 
 import androidx.annotation.Nullable;
 
+import com.goalmanager.Goal;
 import com.goalmanager.R;
 
 public class GoalPreview extends View {
@@ -18,6 +19,7 @@ public class GoalPreview extends View {
 
     String goalTitle;
     String goalDescription;
+    Goal goal;
 
     public GoalPreview(Context context) {
         super(context);
@@ -27,10 +29,11 @@ public class GoalPreview extends View {
     public GoalPreview(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
     }
-    public GoalPreview(Context context, @Nullable AttributeSet attrs) {
+    public GoalPreview(Context context, @Nullable AttributeSet attrs, Goal goal) {
         super(context, attrs);
         paint = new Paint();
         this.context = context;
+        this.goal = goal;
     }
 
     @Override
@@ -42,7 +45,11 @@ public class GoalPreview extends View {
         //Background Color
         paint.setStyle(Paint.Style.FILL);
         paint.setAntiAlias(true);
-        paint.setColor(context.getColor(R.color.button));
+        if(goal.complete) {
+            paint.setColor(context.getColor(R.color.goal_complete_color));
+        }else{
+            paint.setColor(context.getColor(R.color.button));
+        }
 
         canvas.drawRect(0,viewHeight/40f,viewWidth,(int)(viewHeight*.95),paint);
 //        canvas.drawCircle(viewWidthHalf, viewHeightHalf, radius, circlePaint);
@@ -64,7 +71,7 @@ public class GoalPreview extends View {
 
         paint.setTextSize((int)(viewHeight/4f));
         paint.setColor(context.getColor(R.color.DarkerGrey));
-        canvas.drawText((goalDescription.length()>34)?goalDescription.substring(0,34)+"…":goalDescription, (int)(viewWidth/25f), (int)(viewHeight/4*1.25)*2, paint);
+        canvas.drawText((goalDescription.length()>32)?goalDescription.substring(0,32)+"…":goalDescription, (int)(viewWidth/25f), (int)(viewHeight/4*1.25)*2, paint);
 
     }
 

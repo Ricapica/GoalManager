@@ -4,7 +4,11 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 
 import android.app.Dialog;
+import android.app.job.JobInfo;
+import android.app.job.JobScheduler;
+import android.content.ComponentName;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
@@ -19,9 +23,13 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.Spinner;
+import android.widget.Switch;
 import android.widget.TextView;
+import android.widget.TimePicker;
+import android.widget.ToggleButton;
 
 import com.goalmanager.Views.GoalButton;
+import com.goalmanager.Views.WeekDaysToggleButton;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -36,8 +44,8 @@ public class MainActivity extends AppCompatActivity {
     LinearLayout mainList;              //This is the main View where the goals will appear.
     Context context;                    //The context of this activity. Needed to pass to other classes.
 
-    //TODO-Online Syncing support.
-
+    //TODO- Online Syncing support.
+    //TODO- Manage categories activity.
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -71,7 +79,12 @@ public class MainActivity extends AppCompatActivity {
                 final Dialog dialog = new Dialog(context);
 
                 BuildGoalLayout(dialog, b.goal);
-
+                dialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+                    @Override
+                    public void onDismiss(DialogInterface dialog) {
+                        showGoalButtons(context);
+                    }
+                });
 
                 //Display the Dialog and force its size to be most of the screen.
                 dialog.show();
@@ -166,7 +179,6 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
-
     public void createAddGoalListeners(final Context context, final Button b) {
 
         b.setOnClickListener(new View.OnClickListener() {
@@ -212,9 +224,58 @@ public class MainActivity extends AppCompatActivity {
         });
 
     }
+    public void createAddCategoryListeners(final Context context, final Button b) {
+
+        b.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                Log.e("Rica", "clicked "+ b.getText());
+
+                final Dialog dialog = new Dialog(context);
+                dialog.setContentView(R.layout.add_category_popup);
+                final Button add = dialog.findViewById(R.id.confirm_button);
+                (dialog.findViewById(R.id.categoryName)).requestFocus();
+                Objects.requireNonNull(dialog.getWindow()).setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE);
+
+                add.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        String categoryName=((EditText)dialog.findViewById(R.id.categoryName)).getText().toString();
+                        if(categoryName.length()>1)
+                        {
+                            Log.e("Rica","Adding it: ");
+                            addCategory(categoryName);
+                            dialog.dismiss();
+                        }
+                    }
+                });
+
+                final Button cancel = dialog.findViewById(R.id.cancel_button);
+                cancel.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        dialog.dismiss();
+                    }
+                });
+                if(dialog.getWindow() != null) {
+                    dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+                }
+                dialog.show();
+
+            }
+        });
+
+    }
 
     public void addGoal(Goal g){
+        g.category="General";           //Default Category.
+        g.goalType=GoalTypes.SINGLE;    //Default Type.
         goals.add(g);
+    }
+    public void addCategory(String categoryName){
+        goalCategories.add(categoryName);
+        SaveCategories(goalCategories);
     }
 
     public void showGoalButtons(Context context){
@@ -241,14 +302,22 @@ public class MainActivity extends AppCompatActivity {
         Button addGoalButton = new Button(this);
         addGoalButton.setText(getResources().getString(R.string.new_goal_button));
         addGoalButton.setLayoutParams(new ViewGroup.LayoutParams( ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
-        addGoalButton.setBackgroundColor(ContextCompat.getColor(this,R.color.add_button));
+        addGoalButton.setBackgroundColor(ContextCompat.getColor(this,R.color.add_goal_button));
 
         createAddGoalListeners(this, addGoalButton);
+
+        Button addCategoryButton = new Button(this);
+        addCategoryButton.setText(getResources().getString(R.string.new_category_button));
+        addCategoryButton.setLayoutParams(new ViewGroup.LayoutParams( ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+        addCategoryButton.setBackgroundColor(ContextCompat.getColor(this,R.color.add_category_button));
+
+        createAddCategoryListeners(this, addCategoryButton);
+
         String saved = Utils.SaveAsJSON(goals);
         Log.e("Saved: ",saved);
         Utils.LoadFromJSON(saved);
         mainList.addView(addGoalButton);
-
+        mainList.addView(addCategoryButton);
     }
 
     private void SaveGoals(){
@@ -283,15 +352,15 @@ public class MainActivity extends AppCompatActivity {
             categories.addAll(Arrays.asList(categoryArray));
         }
         else{
+            categories.add("x");
             categories.add("General");
-            SaveCategories(categories);
         }
         return categories;
     }
 
 
 
-    private void BuildGoalLayout(Dialog dialog, Goal goal){
+    private void BuildGoalLayout(final Dialog dialog, final Goal goal){
         dialog.setContentView(R.layout.goal_layout);
 
         //Initialize the Title and Description from the goal.
@@ -302,14 +371,28 @@ public class MainActivity extends AppCompatActivity {
         goalDescription.setText(goal.subtitle);
 
         //Populate the category spinner.
-        ArrayAdapter<String> categoryAdapter = new ArrayAdapter<>(this,android.R.layout.simple_spinner_item,goalCategories);
+        final ArrayAdapter<String> categoryAdapter = new ArrayAdapter<>(this,android.R.layout.simple_spinner_item,goalCategories);
         categoryAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         final Spinner categorySpinner = dialog.findViewById(R.id.goal_category_spinner);
         categorySpinner.setAdapter(categoryAdapter);
         categorySpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                Log.e("Spinner","New item selected"+categorySpinner.getItemAtPosition(position));
+                String selected = (String)categorySpinner.getItemAtPosition(position);
+                Log.e("Spinner","New category selected: "+selected);
+                if(selected.equals("x"))
+                {
+                    //Initialization
+                    for(int i=0;i<categorySpinner.getAdapter().getCount();i++)
+                    {
+                        if(categorySpinner.getItemAtPosition(i).equals(goal.category)){
+                            categorySpinner.setSelection(i);
+                        }
+                    }
+                }else{
+                    goal.category=selected;
+                    SaveGoals();
+                }
             }
 
             @Override
@@ -336,6 +419,179 @@ public class MainActivity extends AppCompatActivity {
         });
 
         //Show Reminder Control if Valid.
+        LinearLayout reminderView = dialog.findViewById(R.id.reminderViews);
+        if(goal.SupportsReminders()) {
+            final Switch reminder_switch = dialog.findViewById(R.id.toggleReminderSwitch);
+            if(goal.hasReminders){
+                reminder_switch.setChecked(true);
 
+                reminderView.setVisibility(View.VISIBLE);
+            }else{
+                reminder_switch.setChecked(false);
+                reminderView.setVisibility(View.GONE);
+            }
+
+            //When the switch is toggled.
+            reminder_switch.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (reminder_switch.isChecked()) {
+                        //ON
+                        LinearLayout reminderView = dialog.findViewById(R.id.reminderViews);
+                        reminderView.setVisibility(View.VISIBLE);
+                        goal.hasReminders=true;
+                        SaveGoals();
+                    } else {
+                        //OFF
+                        LinearLayout reminderView = dialog.findViewById(R.id.reminderViews);
+                        reminderView.setVisibility(View.GONE);
+                        goal.hasReminders=false;
+                        SaveGoals();
+                    }
+                }
+            });
+
+            //TODO-Make the 7 buttons a single viewGroup.
+            final ArrayList<WeekDaysToggleButton> weekdayList = new ArrayList<>();
+            //Adding weekday toggle buttons.
+            ViewGroup.LayoutParams layoutParams;
+            layoutParams = new ViewGroup.LayoutParams( ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+            layoutParams.height = getApplicationContext().getResources().getDisplayMetrics().heightPixels/20;
+            layoutParams.width = (int)(getApplicationContext().getResources().getDisplayMetrics().widthPixels/7.5);
+
+            WeekDaysToggleButton mondayToggle = new WeekDaysToggleButton(context);
+            WeekDaysToggleButton tuesdayToggle = new WeekDaysToggleButton(context);
+            WeekDaysToggleButton wednesdayToggle = new WeekDaysToggleButton(context);
+            WeekDaysToggleButton thursdayToggle = new WeekDaysToggleButton(context);
+            WeekDaysToggleButton fridayToggle = new WeekDaysToggleButton(context);
+            WeekDaysToggleButton saturdayToggle = new WeekDaysToggleButton(context);
+            WeekDaysToggleButton sundayToggle = new WeekDaysToggleButton(context);
+
+            mondayToggle.setLayoutParams(layoutParams);
+            tuesdayToggle.setLayoutParams(layoutParams);
+            wednesdayToggle.setLayoutParams(layoutParams);
+            thursdayToggle.setLayoutParams(layoutParams);
+            fridayToggle.setLayoutParams(layoutParams);
+            saturdayToggle.setLayoutParams(layoutParams);
+            sundayToggle.setLayoutParams(layoutParams);
+
+
+            mondayToggle.day = "M";
+            tuesdayToggle.day = "T";
+            wednesdayToggle.day = "W";
+            thursdayToggle.day = "T";
+            fridayToggle.day = "F";
+            saturdayToggle.day = "S";
+            sundayToggle.day = "S";
+            if(goal.reminderData.charAt(0)=='0'){
+                //No reminder options.
+                Log.e("Rica","No reminder options for this goal.");
+            } else if(goal.reminderData.charAt(0)=='1') {
+                mondayToggle.state = goal.reminderData.charAt(1) == mondayToggle.day.charAt(0);
+                tuesdayToggle.state = goal.reminderData.charAt(2) == tuesdayToggle.day.charAt(0);
+                wednesdayToggle.state = goal.reminderData.charAt(3) == wednesdayToggle.day.charAt(0);
+                thursdayToggle.state = goal.reminderData.charAt(4) == thursdayToggle.day.charAt(0);
+                fridayToggle.state = goal.reminderData.charAt(5) == fridayToggle.day.charAt(0);
+                saturdayToggle.state = goal.reminderData.charAt(6) == saturdayToggle.day.charAt(0);
+                sundayToggle.state = goal.reminderData.charAt(7) == sundayToggle.day.charAt(0);
+            }
+
+            weekdayList.add(mondayToggle);
+            weekdayList.add(tuesdayToggle);
+            weekdayList.add(wednesdayToggle);
+            weekdayList.add(thursdayToggle);
+            weekdayList.add(fridayToggle);
+            weekdayList.add(saturdayToggle);
+            weekdayList.add(sundayToggle);
+
+            for(final WeekDaysToggleButton day:weekdayList){
+                day.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        day.state=!day.state;
+                        day.invalidate();
+                        goal.reminderData=getReminderString(dialog,weekdayList);
+                        SaveGoals();
+                    }
+                });
+            }
+
+            LinearLayout reminderDays = dialog.findViewById(R.id.reminderDays);
+            reminderDays.addView(mondayToggle);
+            reminderDays.addView(tuesdayToggle);
+            reminderDays.addView(wednesdayToggle);
+            reminderDays.addView(thursdayToggle);
+            reminderDays.addView(fridayToggle);
+            reminderDays.addView(saturdayToggle);
+            reminderDays.addView(sundayToggle);
+
+            //Get the time set
+            final TimePicker timePicker = dialog.findViewById(R.id.timePicker);
+            if(goal.timeData.length()>0){
+                timePicker.setHour(Integer.parseInt(goal.timeData.substring(0,2)));
+                timePicker.setMinute(Integer.parseInt(goal.timeData.substring(2,4)));
+            }else {
+                goal.timeData = getTimeString(timePicker);
+            }
+            timePicker.setOnTimeChangedListener(new TimePicker.OnTimeChangedListener() {
+                @Override
+                public void onTimeChanged(TimePicker view, int hourOfDay, int minute) {
+                    Log.e("Called","Time picker");
+                    goal.timeData = getTimeString(view);
+                }
+            });
+
+            Button setReminder = dialog.findViewById(R.id.setReminder);
+            setReminder.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    JobScheduler jobScheduler = (JobScheduler) getSystemService(Context.JOB_SCHEDULER_SERVICE);
+                    jobScheduler.schedule(new JobInfo.Builder(0,
+                            new ComponentName(context,JobManager.class))
+                            .setMinimumLatency(5000)
+                            .setTriggerContentMaxDelay(6000)
+                            .setPersisted(true)
+                            .build());
+                    Log.e("Rica","clicked");
+                }
+            });
+
+            final ToggleButton completeGoalButton = dialog.findViewById(R.id.complete_button);
+            completeGoalButton.setChecked(goal.complete);
+
+            completeGoalButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    goal.complete = completeGoalButton.isChecked();
+                    SaveGoals();
+                }
+            });
+
+        }
+    }
+
+    public String getReminderString(Dialog dialog, ArrayList<WeekDaysToggleButton> weekList){
+        StringBuilder reply =new StringBuilder();
+        Switch reminderSwitch = dialog.findViewById(R.id.toggleReminderSwitch);
+        if(reminderSwitch.isChecked())
+        {
+            reply.append("1");
+            for(WeekDaysToggleButton day:weekList){
+                if(day.state){
+                    reply.append(day.day.toUpperCase());
+                }else{
+                    reply.append(day.day.toLowerCase());
+                }
+            }
+        }else{
+            reply.append("0");
+        }
+        return reply.toString();
+    }
+    public String getTimeString(TimePicker timePicker){
+        String hour = (""+timePicker.getHour()).length()==1?("0"+timePicker.getHour()):""+timePicker.getHour();
+        String minute = (""+timePicker.getMinute()).length()==1?("0"+timePicker.getMinute()):""+timePicker.getMinute();
+        Log.e("Rica","Time is: "+hour + minute);
+        return hour + minute;
     }
 }

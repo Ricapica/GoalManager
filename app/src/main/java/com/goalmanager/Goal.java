@@ -1,5 +1,7 @@
 package com.goalmanager;
 
+import android.util.Log;
+
 import androidx.annotation.NonNull;
 
 /*
@@ -12,17 +14,28 @@ import androidx.annotation.NonNull;
 
  */
 public class Goal {
+    public int id;
     public String title;
     public String subtitle;
     public String category;
+    public String goalType;
+    public boolean hasReminders;
+    public String reminderData;
+    public String timeData;
+    public boolean complete;
 
     Goal(String title, String subtitle){
+
+
         this.title = title;
         this.subtitle = subtitle;
-    }
-    Goal(String title, String subtitle, String category){
-        this.title = title;
-        this.subtitle = subtitle;
+
+
+        goalType = GoalTypes.SINGLE;
+        hasReminders = false;
+        reminderData = "0";     //0 for off.
+        timeData = "";
+        complete = false;
     }
 
     @NonNull
@@ -30,6 +43,19 @@ public class Goal {
     public String toString() {
         return "Title: "+title+
                 " Description: "+subtitle+
-                " Category: "+category;
+                " Category: "+category+
+                " Goal Type: "+goalType+
+                " Reminders: "+hasReminders+
+                " ReminderData: "+reminderData+
+                " TimeData: "+timeData+
+                " Complete: "+complete;
+    }
+
+    public boolean IsValid(){
+        Log.e("Rica",toString());
+        return title!=null && subtitle!=null && category!=null && goalType!=null;
+    }
+    public boolean SupportsReminders(){
+        return goalType.equals(GoalTypes.SINGLE);
     }
 }

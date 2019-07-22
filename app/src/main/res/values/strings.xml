@@ -4,6 +4,7 @@
 
     <!--MainActivity-->
     <string name="new_goal_button">New Goal</string>
+    <string name="new_category_button">New Category</string>
     <string name="goal_view_delete">Delete</string>
 
     <!--addButton_popup-->
@@ -12,6 +13,12 @@
     <string name="addButton_goal_body_hint">Goal Description</string>
     <string name="addButton_confirm">Add</string>
     <string name="addButton_cancel">Cancel</string>
+
+    <!--add_category_popup-->
+    <string name="add_category_header">New Category:</string>
+    <string name="add_category_hint">Category Name</string>
+    <string name="add_category_confirm">Add</string>
+    <string name="add_category_cancel">Cancel</string>
 
     <!--modifyGoal_popup-->
     <string name="modifyGoal_header">Modify Goal:</string>
@@ -28,8 +35,20 @@
     <!--Goal View-->
     <string name="category_title">Category:</string>
     <string name="type_title">Type:</string>
+    <string name="reminder_title">Reminder Options: </string>
+    <string name="Monday">M</string>
+    <string name="Tuesday">T</string>
+    <string name="Wednesday">W</string>
+    <string name="Thursday">T</string>
+    <string name="Friday">F</string>
+    <string name="Saturday">S</string>
+    <string name="Sunday">S</string>
+    <string name="Complete">Complete</string>
+    <string name="set_reminder">Set</string>
+
 
     <!--SharedPrefs-->
     <string name="shared_goals">goals</string>
     <string name="shared_categories">categories</string>
+    <string name="shared_goal_id">goalId</string>
 </resources>

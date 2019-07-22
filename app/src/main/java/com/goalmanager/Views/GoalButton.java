@@ -41,7 +41,7 @@ public class GoalButton extends ViewGroup {
         layoutParams = new ViewGroup.LayoutParams( LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         layoutParams.height = context.getResources().getDisplayMetrics().heightPixels/10;
         layoutParams.width = (int)(context.getResources().getDisplayMetrics().widthPixels*.2);
-        goalPreview = new GoalPreview(context, attrs);
+        goalPreview = new GoalPreview(context, attrs, goal);
         goalPreview.goalTitle = goal.title;
         goalPreview.goalDescription = goal.subtitle;
         goalPreview.setLayoutParams(layoutParams);
