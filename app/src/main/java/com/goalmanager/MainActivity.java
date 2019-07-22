@@ -41,6 +41,7 @@ public class MainActivity extends AppCompatActivity {
     ArrayList<Goal> goals;              //This list will be filled with all the goals that should appear on the screen.
     ArrayList<String> goalCategories;   //This list will be filled with all the categories a goal can belong to.
     ArrayList<String> goalTypes;        //This list will be filled with all the types a goal can be.
+    ArrayList<String> reminderTypes;    //This list will be filled with all the types a goal reminder can be.
     LinearLayout mainList;              //This is the main View where the goals will appear.
     Context context;                    //The context of this activity. Needed to pass to other classes.
 
@@ -63,6 +64,7 @@ public class MainActivity extends AppCompatActivity {
         goals = Utils.LoadFromJSON(goalString);
         goalCategories = LoadGoalCategories();
         goalTypes = GoalTypes.GetGoalTypes();
+        reminderTypes = LoadReminderTypes();
         //Prepare the layout params for the buttons.
         showGoalButtons(context);
     }
@@ -357,7 +359,12 @@ public class MainActivity extends AppCompatActivity {
         }
         return categories;
     }
-
+    private ArrayList<String> LoadReminderTypes(){
+        ArrayList<String> reminderTypes = new ArrayList<>();
+        reminderTypes.add("x");
+        reminderTypes.addAll(GoalReminderType.GetReminderTypes());
+        return reminderTypes;
+    }
 
 
     private void BuildGoalLayout(final Dialog dialog, final Goal goal){
@@ -402,10 +409,10 @@ public class MainActivity extends AppCompatActivity {
         });
 
         //Populate the type spinner.
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(this,android.R.layout.simple_spinner_item,goalTypes);
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        ArrayAdapter<String> typeAdapter = new ArrayAdapter<>(this,android.R.layout.simple_spinner_item,goalTypes);
+        typeAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         final Spinner typeSpinner = dialog.findViewById(R.id.goal_type_spinner);
-        typeSpinner.setAdapter(adapter);
+        typeSpinner.setAdapter(typeAdapter);
         typeSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
@@ -448,6 +455,37 @@ public class MainActivity extends AppCompatActivity {
                         goal.hasReminders=false;
                         SaveGoals();
                     }
+                }
+            });
+
+            //Populate the reminder type spinner.
+            ArrayAdapter<String> reminderTypeAdapter = new ArrayAdapter<>(this,android.R.layout.simple_spinner_item,reminderTypes);
+            reminderTypeAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+            final Spinner reminderSpinner = dialog.findViewById(R.id.reminder_type_spinner);
+            reminderSpinner.setAdapter(reminderTypeAdapter);
+            reminderSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                @Override
+                public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                    Log.e("Spinner","New item selected"+reminderSpinner.getItemAtPosition(position));
+                    String selected = (String)reminderSpinner.getItemAtPosition(position);
+                    if(selected.equals("x"))
+                    {
+                        //Initialization
+                        for(int i=0;i<reminderSpinner.getAdapter().getCount();i++)
+                        {
+                            if(reminderSpinner.getItemAtPosition(i).equals(goal.reminderType)){
+                                reminderSpinner.setSelection(i);
+                            }
+                        }
+                    }else{
+                        goal.reminderType=selected;
+                        SaveGoals();
+                    }
+                }
+
+                @Override
+                public void onNothingSelected(AdapterView<?> parent) {
+
                 }
             });
 

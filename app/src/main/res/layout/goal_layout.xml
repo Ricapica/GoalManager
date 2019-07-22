@@ -68,6 +68,7 @@
 
             </Spinner>
         </LinearLayout>
+        <!--Separator-->
         <View
             android:layout_width="fill_parent"
             android:layout_height="2dp"
@@ -87,12 +88,34 @@
                 android:layout_height="wrap_content"
                 android:id="@+id/toggleReminderSwitch"/>
         </LinearLayout>
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:orientation="vertical"
             android:id="@+id/reminderViews"
             android:visibility="gone">
+
+            <!--REMINDER TYPE-->
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/reminder_type"
+                    android:text="@string/type_title"
+                    android:textColor="@color/DarkestGrey"
+                    android:textSize="20sp"
+                    />
+                <Spinner
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/reminder_type_spinner">
+                </Spinner>
+            </LinearLayout>
+
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"

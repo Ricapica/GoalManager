@@ -17,11 +17,12 @@ public class Goal {
     public int id;
     public String title;
     public String subtitle;
-    public String category;
-    public String goalType;
-    public boolean hasReminders;
-    public String reminderData;
-    public String timeData;
+    String category;
+    String goalType;
+    boolean hasReminders;
+    String reminderType;
+    String reminderData;
+    String timeData;
     public boolean complete;
 
     Goal(String title, String subtitle){
@@ -30,9 +31,11 @@ public class Goal {
         this.title = title;
         this.subtitle = subtitle;
 
+        //Default goal settings initialization.
 
         goalType = GoalTypes.SINGLE;
         hasReminders = false;
+        reminderType = GoalReminderType.DAILY;
         reminderData = "0";     //0 for off.
         timeData = "";
         complete = false;
@@ -46,16 +49,17 @@ public class Goal {
                 " Category: "+category+
                 " Goal Type: "+goalType+
                 " Reminders: "+hasReminders+
+                " Reminder Type: "+reminderType+
                 " ReminderData: "+reminderData+
                 " TimeData: "+timeData+
                 " Complete: "+complete;
     }
 
-    public boolean IsValid(){
+    boolean IsValid(){
         Log.e("Rica",toString());
         return title!=null && subtitle!=null && category!=null && goalType!=null;
     }
-    public boolean SupportsReminders(){
+    boolean SupportsReminders(){
         return goalType.equals(GoalTypes.SINGLE);
     }
 }

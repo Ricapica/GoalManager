@@ -29,6 +29,7 @@ class Utils {
             sb.append("\"Category\":\"").append(goal.category.replace("\"","'")).append("\",");
             sb.append("\"Type\":\"").append(goal.goalType).append("\",");
             sb.append("\"Reminders\":\"").append(goal.hasReminders?"T":"F").append("\",");
+            sb.append("\"ReminderType\":\"").append(goal.reminderType).append("\",");
             sb.append("\"ReminderData\":\"").append(goal.reminderData).append("\",");
             sb.append("\"TimeData\":\"").append(goal.timeData).append("\",");
             sb.append("\"Complete\":\"").append(goal.complete?"T":"F").append("\",");
@@ -70,22 +71,24 @@ class Utils {
         Goal goal = null;
         try {
             JSONObject jsonObject = new JSONObject(json);
-            String title = jsonObject.getString("Title");
-            String subtitle = jsonObject.getString("Subtitle");
-            String category = jsonObject.getString("Category");
-            String goalType = jsonObject.getString("Type");
-            boolean hasReminders = jsonObject.getString("Reminders").equals("T");
-            String reminderData = jsonObject.getString("ReminderData");
-            String timeData = jsonObject.getString("TimeData");
-            boolean complete = jsonObject.getString("Complete").equals("T");
+            String title = jsonObject.has("Title")?jsonObject.getString("Title"):"";
+            String subtitle = jsonObject.has("Subtitle")?jsonObject.getString("Subtitle"):"";
+            String category = jsonObject.has("Category")?jsonObject.getString("Category"):"General";
+            String goalType = jsonObject.has("Type")?jsonObject.getString("Type"):GoalTypes.SINGLE;
+            boolean hasReminders = jsonObject.has("Reminders") && jsonObject.getString("Reminders").equals("T");
+            String reminderType = jsonObject.has("ReminderType")?jsonObject.getString("ReminderType"):GoalReminderType.DAILY;
+            String reminderData =  jsonObject.has("ReminderData")?jsonObject.getString("ReminderData"):"0";
+            String timeData = jsonObject.has("TimeData")?jsonObject.getString("TimeData"):"";
+            boolean complete = jsonObject.has("Complete") && jsonObject.getString("Complete").equals("T");
 
             goal = new Goal(title, subtitle);
-            goal.category=category;
-            goal.goalType=goalType;
+            goal.category =     category!=null? category:"General";
+            goal.goalType =     goalType!=null? goalType:GoalTypes.SINGLE;
             goal.hasReminders = hasReminders;
-            goal.reminderData = reminderData;
-            goal.timeData = timeData;
-            goal.complete = complete;
+            goal.reminderType = reminderType!=null? reminderType:GoalReminderType.DAILY;
+            goal.reminderData = reminderData!=null? reminderData:"0";
+            goal.timeData =     timeData!=null? timeData:"";
+            goal.complete =     complete;
 
             Log.e("Rica",goal.toString());
         }catch(org.json.JSONException e){
@@ -103,6 +106,7 @@ class Utils {
         SharedPreferences.Editor editor = sharedPreferences.edit();
         int id = sharedPreferences.getInt(context.getResources().getString(R.string.shared_goal_id),0);
         editor.putInt(context.getResources().getString(R.string.shared_goal_id),id+1);
+        editor.apply();
         return id;
     }
 
