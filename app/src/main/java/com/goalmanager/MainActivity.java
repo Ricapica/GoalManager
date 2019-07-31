@@ -98,7 +98,7 @@ public class MainActivity extends AppCompatActivity {
                 //Display the Dialog and force its size to be most of the screen.
                 dialog.show();
                 WindowManager.LayoutParams lp = new WindowManager.LayoutParams();
-                lp.copyFrom(dialog.getWindow().getAttributes());
+                lp.copyFrom(Objects.requireNonNull(dialog.getWindow()).getAttributes());
                 lp.width = WindowManager.LayoutParams.MATCH_PARENT;
                 lp.height = WindowManager.LayoutParams.MATCH_PARENT;
                 dialog.getWindow().setAttributes(lp);
@@ -356,7 +356,7 @@ public class MainActivity extends AppCompatActivity {
         ArrayList<String> categories = new ArrayList<>();
         SharedPreferences sharedPreferences = getSharedPreferences("sharedPrefs",MODE_PRIVATE);
         String allCategories = sharedPreferences.getString(context.getResources().getString(R.string.shared_categories),"");
-        if(allCategories!=null && allCategories.length()>0) {
+        if(allCategories.length()>0) {
             String[] categoryArray = allCategories.split(";");
             categories.addAll(Arrays.asList(categoryArray));
         }
@@ -663,32 +663,38 @@ public class MainActivity extends AppCompatActivity {
         LinearLayout reminderDays = dialog.findViewById(R.id.reminderDays);
         TimePicker timePicker = dialog.findViewById(R.id.timePicker);
 
-        if(goal.reminderType.equals(GoalReminderType.DAILY)){
+        switch (goal.reminderType) {
+            case GoalReminderType.DAILY:
 
-            reminderDays.setVisibility(View.GONE);
-            timePicker.setVisibility(View.VISIBLE);
+                reminderDays.setVisibility(View.GONE);
+                timePicker.setVisibility(View.VISIBLE);
 
-        }else if (goal.reminderType.equals(GoalReminderType.WEEKLY)){
+                break;
+            case GoalReminderType.WEEKLY:
 
-            reminderDays.setVisibility(View.VISIBLE);
-            timePicker.setVisibility(View.VISIBLE);
+                reminderDays.setVisibility(View.VISIBLE);
+                timePicker.setVisibility(View.VISIBLE);
 
-        }else if (goal.reminderType.equals(GoalReminderType.MONTHLY)){
-            //TODO- A day picker 1-31, what about february?
+                break;
+            case GoalReminderType.MONTHLY:
+                //TODO- A day picker 1-31, what about february?
 
-            reminderDays.setVisibility(View.GONE);
-            timePicker.setVisibility(View.GONE);
+                reminderDays.setVisibility(View.GONE);
+                timePicker.setVisibility(View.GONE);
 
-        }else if (goal.reminderType.equals(GoalReminderType.PERIODICAL)){
-            //TODO- Implement a digit entry and a value spinner (hours, days)
-            reminderDays.setVisibility(View.GONE);
-            timePicker.setVisibility(View.VISIBLE);
+                break;
+            case GoalReminderType.PERIODICAL:
+                //TODO- Implement a digit entry and a value spinner (hours, days)
+                reminderDays.setVisibility(View.GONE);
+                timePicker.setVisibility(View.VISIBLE);
 
-        }else if (goal.reminderType.equals(GoalReminderType.PERMANENT)){
+                break;
+            case GoalReminderType.PERMANENT:
 
-            reminderDays.setVisibility(View.GONE);
-            timePicker.setVisibility(View.GONE);
+                reminderDays.setVisibility(View.GONE);
+                timePicker.setVisibility(View.GONE);
 
+                break;
         }
     }
 }
