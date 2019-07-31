@@ -2,6 +2,10 @@ package com.goalmanager;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
+import androidx.work.ExistingPeriodicWorkPolicy;
+import androidx.work.OneTimeWorkRequest;
+import androidx.work.PeriodicWorkRequest;
+import androidx.work.WorkManager;
 
 import android.app.Dialog;
 import android.app.job.JobInfo;
@@ -31,9 +35,12 @@ import android.widget.ToggleButton;
 import com.goalmanager.Views.GoalButton;
 import com.goalmanager.Views.WeekDaysToggleButton;
 
+import java.sql.Time;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -480,6 +487,7 @@ public class MainActivity extends AppCompatActivity {
                     }else{
                         goal.reminderType=selected;
                         SaveGoals();
+                        updateReminderViews(dialog, goal);
                     }
                 }
 
@@ -583,16 +591,34 @@ public class MainActivity extends AppCompatActivity {
             setReminder.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    JobScheduler jobScheduler = (JobScheduler) getSystemService(Context.JOB_SCHEDULER_SERVICE);
-                    jobScheduler.schedule(new JobInfo.Builder(0,
-                            new ComponentName(context,JobManager.class))
-                            .setMinimumLatency(5000)
-                            .setTriggerContentMaxDelay(6000)
-                            .setPersisted(true)
-                            .build());
-                    Log.e("Rica","clicked");
+                    Log.e("Rica","clicked to set a job");
+
+                    Calendar cal =Calendar.getInstance();
+                    long now = cal.getTimeInMillis();
+                    Log.e("Time: ",""+now);
+                    cal.set(Calendar.HOUR_OF_DAY,timePicker.getHour());
+                    cal.set(Calendar.MINUTE,timePicker.getMinute());
+                    cal.set(Calendar.SECOND,0);
+                    long targetTime=cal.getTimeInMillis();
+                    Log.e("Time we want is"," "+targetTime+" Difference: "+(targetTime-now)/1000);
+
+                    switch(goal.reminderType) {
+                        case GoalReminderType.DAILY:
+
+                            PeriodicWorkRequest setReminder = new PeriodicWorkRequest.Builder(ReminderWorker.class,24,TimeUnit.HOURS)
+                                    .setInitialDelay(targetTime-now,TimeUnit.MILLISECONDS)
+                                    .addTag(goal.title)
+                                    .build();
+                            WorkManager.getInstance(context).enqueueUniquePeriodicWork(goal.title, ExistingPeriodicWorkPolicy.REPLACE,setReminder);
+                            break;
+
+                        case GoalReminderType.WEEKLY:
+                        default:
+                            break;
+                    }
                 }
             });
+
 
             final ToggleButton completeGoalButton = dialog.findViewById(R.id.complete_button);
             completeGoalButton.setChecked(goal.complete);
@@ -604,7 +630,7 @@ public class MainActivity extends AppCompatActivity {
                     SaveGoals();
                 }
             });
-
+            updateReminderViews(dialog, goal);
         }
     }
 
@@ -631,5 +657,38 @@ public class MainActivity extends AppCompatActivity {
         String minute = (""+timePicker.getMinute()).length()==1?("0"+timePicker.getMinute()):""+timePicker.getMinute();
         Log.e("Rica","Time is: "+hour + minute);
         return hour + minute;
+    }
+
+    private void updateReminderViews(Dialog dialog, Goal goal){
+        LinearLayout reminderDays = dialog.findViewById(R.id.reminderDays);
+        TimePicker timePicker = dialog.findViewById(R.id.timePicker);
+
+        if(goal.reminderType.equals(GoalReminderType.DAILY)){
+
+            reminderDays.setVisibility(View.GONE);
+            timePicker.setVisibility(View.VISIBLE);
+
+        }else if (goal.reminderType.equals(GoalReminderType.WEEKLY)){
+
+            reminderDays.setVisibility(View.VISIBLE);
+            timePicker.setVisibility(View.VISIBLE);
+
+        }else if (goal.reminderType.equals(GoalReminderType.MONTHLY)){
+            //TODO- A day picker 1-31, what about february?
+
+            reminderDays.setVisibility(View.GONE);
+            timePicker.setVisibility(View.GONE);
+
+        }else if (goal.reminderType.equals(GoalReminderType.PERIODICAL)){
+            //TODO- Implement a digit entry and a value spinner (hours, days)
+            reminderDays.setVisibility(View.GONE);
+            timePicker.setVisibility(View.VISIBLE);
+
+        }else if (goal.reminderType.equals(GoalReminderType.PERMANENT)){
+
+            reminderDays.setVisibility(View.GONE);
+            timePicker.setVisibility(View.GONE);
+
+        }
     }
 }
