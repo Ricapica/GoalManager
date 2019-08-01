@@ -3,14 +3,10 @@ package com.goalmanager;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 import androidx.work.ExistingPeriodicWorkPolicy;
-import androidx.work.OneTimeWorkRequest;
 import androidx.work.PeriodicWorkRequest;
 import androidx.work.WorkManager;
 
 import android.app.Dialog;
-import android.app.job.JobInfo;
-import android.app.job.JobScheduler;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
@@ -30,12 +26,12 @@ import android.widget.Spinner;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.TimePicker;
+import android.widget.Toast;
 import android.widget.ToggleButton;
 
 import com.goalmanager.Views.GoalButton;
 import com.goalmanager.Views.WeekDaysToggleButton;
 
-import java.sql.Time;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -54,27 +50,39 @@ public class MainActivity extends AppCompatActivity {
 
     //TODO- Online Syncing support.
     //TODO- Manage categories activity.
+    //TODO- Sort Goals by category.
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        //Context to refer this activity.
         context = this;
+
+        //Will hold the goals.
         mainList = findViewById(R.id.mainList);
 
-
-        goals = new ArrayList<>();
-
-        //Create buttons from the list of goals.
+        //Create buttons from the list of goals from shared preferences.
 
         SharedPreferences sharedPreferences = getSharedPreferences("sharedPrefs",MODE_PRIVATE);
         String goalString = sharedPreferences.getString("goals","");
+
+        //Load the goals.
         goals = Utils.LoadFromJSON(goalString);
+
+        //Load the categories.
         goalCategories = LoadGoalCategories();
+
+        //Load the goal types.
         goalTypes = GoalTypes.GetGoalTypes();
+
+        //Load reminder types.
         reminderTypes = LoadReminderTypes();
+
         //Prepare the layout params for the buttons.
         showGoalButtons(context);
     }
+
 
     public void createGoalListeners(final Context context, final GoalButton b) {
         b.setOnClickListener(new View.OnClickListener() {
@@ -82,7 +90,7 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
 
                 Log.e("Rica", "clicked "+ b.goal.title);
-                //TODO take use to an activity corresponding to goal.
+                //TODO take user to an activity corresponding to goal.
                 //TODO Support for sub goals.
 
                 final Dialog dialog = new Dialog(context);
@@ -601,7 +609,11 @@ public class MainActivity extends AppCompatActivity {
                     cal.set(Calendar.SECOND,0);
                     long targetTime=cal.getTimeInMillis();
                     Log.e("Time we want is"," "+targetTime+" Difference: "+(targetTime-now)/1000);
-
+                    if(targetTime-now<0)
+                    {
+                        //If the time has passed already, the time will be the next day.
+                        targetTime+=1000*60*60*24;
+                    }
                     switch(goal.reminderType) {
                         case GoalReminderType.DAILY:
 
@@ -616,6 +628,7 @@ public class MainActivity extends AppCompatActivity {
                         default:
                             break;
                     }
+                    Toast.makeText(context,"Reminder Set!",Toast.LENGTH_SHORT).show();
                 }
             });
 
@@ -685,6 +698,7 @@ public class MainActivity extends AppCompatActivity {
                 break;
             case GoalReminderType.PERIODICAL:
                 //TODO- Implement a digit entry and a value spinner (hours, days)
+
                 reminderDays.setVisibility(View.GONE);
                 timePicker.setVisibility(View.VISIBLE);
 
