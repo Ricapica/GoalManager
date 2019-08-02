@@ -4,7 +4,7 @@
 
     <!--MainActivity-->
     <string name="new_goal_button">New Goal</string>
-    <string name="new_category_button">New Category</string>
+    <string name="manage_category_button">Manage Categories</string>
     <string name="goal_view_delete">Delete</string>
 
     <!--addButton_popup-->
@@ -13,6 +13,10 @@
     <string name="addButton_goal_body_hint">Goal Description</string>
     <string name="addButton_confirm">Add</string>
     <string name="addButton_cancel">Cancel</string>
+
+    <!--Manage Categories Activity-->
+    <string name="category_activity_title">My Categories</string>
+    <string name="new_category_button">New Category</string>
 
     <!--add_category_popup-->
     <string name="add_category_header">New Category:</string>

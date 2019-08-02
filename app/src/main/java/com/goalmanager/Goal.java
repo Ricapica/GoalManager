@@ -14,7 +14,6 @@ import androidx.annotation.NonNull;
 
  */
 public class Goal {
-    public int id;
     public String title;
     public String subtitle;
     String category;
@@ -44,15 +43,15 @@ public class Goal {
     @NonNull
     @Override
     public String toString() {
-        return "Title: "+title+
-                " Description: "+subtitle+
-                " Category: "+category+
-                " Goal Type: "+goalType+
-                " Reminders: "+hasReminders+
-                " Reminder Type: "+reminderType+
-                " ReminderData: "+reminderData+
-                " TimeData: "+timeData+
-                " Complete: "+complete;
+        return "Title: " + title +
+                " Description: " + subtitle +
+                " Category: " + category +
+                " Goal Type: " + goalType +
+                " Reminders: " + hasReminders +
+                " Reminder Type: " + reminderType +
+                " ReminderData: " + reminderData +
+                " TimeData: " + timeData +
+                " Complete: " + complete;
     }
 
     boolean IsValid(){
@@ -60,6 +59,6 @@ public class Goal {
         return title!=null && subtitle!=null && category!=null && goalType!=null;
     }
     boolean SupportsReminders(){
-        return goalType.equals(GoalTypes.SINGLE);
+        return goalType.equals(GoalTypes.SINGLE) || goalType.equals(GoalTypes.SUB_SINGLE);
     }
 }
