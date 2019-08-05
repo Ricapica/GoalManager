@@ -1,10 +1,8 @@
 package com.goalmanager.Views;
 import android.content.Context;
-import android.graphics.Paint;
 import android.util.AttributeSet;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 
 import com.goalmanager.Goal;
 
@@ -13,8 +11,6 @@ public class GoalButton extends ViewGroup {
 
     public Goal goal;
 
-    private Paint paint;
-    private Context context;
 
     public GoalPreview goalPreview;
     public DeleteButton deleteButton;
@@ -32,8 +28,6 @@ public class GoalButton extends ViewGroup {
     //Custom Constructor.
     public GoalButton(Context context, AttributeSet attrs,Goal goal){
         super(context,attrs, 0);
-        this.context=context;
-        paint = new Paint();
 
         this.goal = goal;
 
