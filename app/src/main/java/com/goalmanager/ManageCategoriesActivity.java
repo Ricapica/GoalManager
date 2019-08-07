@@ -17,6 +17,8 @@ import android.widget.LinearLayout;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 
+import com.goalmanager.Views.CategoryView;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -34,7 +36,7 @@ public class ManageCategoriesActivity extends AppCompatActivity {
         setContentView(R.layout.activity_manage_categories);
 
         context = this;
-        categoryListView = findViewById(R.id.cateforyList);
+        categoryListView = findViewById(R.id.categoryList);
 
         categories = LoadGoalCategories();
 
@@ -42,6 +44,8 @@ public class ManageCategoriesActivity extends AppCompatActivity {
     }
 
     public void ShowCategories(){
+        categoryListView.removeAllViews();
+
         Button addCategoryButton = new Button(this);
         addCategoryButton.setText(getResources().getString(R.string.new_category_button));
         addCategoryButton.setLayoutParams(new ViewGroup.LayoutParams( ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
@@ -52,12 +56,17 @@ public class ManageCategoriesActivity extends AppCompatActivity {
         Collections.sort(categories);
         //TODO- Deleting with prompt.
         for(String category:categories){
-            if(category.equals("x")){
+            if(category.equals("x") || category.equals("General")){
                 continue;
             }
-            EditText text = new EditText(context);
-            text.setText(category);
-            categoryListView.addView(text);
+            Log.e("Building category view","progress");
+            ViewGroup.LayoutParams layoutParams;
+            layoutParams = new ViewGroup.LayoutParams( ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+            layoutParams.height = getApplicationContext().getResources().getDisplayMetrics().heightPixels/10;
+            CategoryView categoryView = new CategoryView(context,null,category);
+            categoryView.setLayoutParams(layoutParams);
+            AddCategoryViewListeners(categoryView);
+            categoryListView.addView(categoryView);
         }
     }
     public void createAddCategoryListeners(final Context context, final Button b) {
@@ -104,6 +113,38 @@ public class ManageCategoriesActivity extends AppCompatActivity {
         });
 
     }
+    public void AddCategoryViewListeners(final CategoryView categoryView){
+        categoryView.deleteButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                final Dialog dialog = new Dialog(context);
+                dialog.setContentView(R.layout.deletecategory_popup);
+
+                final Button confirm_delete = dialog.findViewById(R.id.confirm_delete_button);
+                confirm_delete.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        Log.e("Rica"," Deleting Category");
+                        categories.remove(categoryView.category);
+                        SaveCategories(categories);
+                        ShowCategories();
+                        dialog.dismiss();
+                    }
+                });
+                final Button cancel = dialog.findViewById(R.id.cancel_delete_button);
+                cancel.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        dialog.dismiss();
+                    }
+                });
+                if(dialog.getWindow() != null) {
+                    dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+                }
+                dialog.show();
+            }
+        });
+    }
     public void addCategory(String categoryName){
         categories.add(categoryName);
         SaveCategories(categories);
@@ -124,7 +165,6 @@ public class ManageCategoriesActivity extends AppCompatActivity {
         }
         return categories;
     }
-
     private void SaveCategories(ArrayList<String> categories){
         StringBuilder allCategories = new StringBuilder();
         for(int i=0; i < categories.size();i++){

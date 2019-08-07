@@ -2,56 +2,53 @@ package com.goalmanager.Views;
 
 import android.content.Context;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
-import com.goalmanager.Goal;
+public class CategoryView extends ViewGroup {
 
+    public String category;
 
-public class GoalButton extends ViewGroup {
-
-    public Goal goal;
-
-    public GoalPreview goalPreview;
+    public TextView textView;
     public DeleteButton deleteButton;
     //Android Constructors.
-    public GoalButton(Context context){
+    public CategoryView(Context context){
         super(context);
     }
-    public GoalButton(Context context, AttributeSet attrs){
+    public CategoryView(Context context, AttributeSet attrs){
         super(context, attrs, 0);
     }
-    public GoalButton(Context context, AttributeSet attrs, int defStyle) {
+    public CategoryView(Context context, AttributeSet attrs, int defStyle){
         super(context, attrs, defStyle);
     }
 
     //Custom Constructor.
-    public GoalButton(Context context, AttributeSet attrs,Goal goal){
-        super(context,attrs, 0);
+    public CategoryView(Context context, AttributeSet attrs, String category){
+        super(context,attrs,0);
 
-        this.goal = goal;
+        this.category = category;
 
         ViewGroup.LayoutParams layoutParams;
-        layoutParams = new ViewGroup.LayoutParams( LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        layoutParams = new ViewGroup.LayoutParams( LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
         layoutParams.height = context.getResources().getDisplayMetrics().heightPixels/10;
         layoutParams.width = (int)(context.getResources().getDisplayMetrics().widthPixels*.2);
-        goalPreview = new GoalPreview(context, attrs, goal);
-        goalPreview.goalTitle = goal.title;
-        goalPreview.goalDescription = goal.subtitle;
-        goalPreview.setLayoutParams(layoutParams);
-
+        textView = new TextView(context);
+        textView.setText(category);
 
         layoutParams = new ViewGroup.LayoutParams( ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         layoutParams.height = context.getResources().getDisplayMetrics().heightPixels/10;
         layoutParams.width = (int)(context.getResources().getDisplayMetrics().widthPixels*.2);
         deleteButton = new DeleteButton(context, attrs);
         deleteButton.setLayoutParams(layoutParams);
+        deleteButton.SetWidthHeightRatio(.15f,.75f);
 
-
-        addView(goalPreview);
+        Log.e("Adding the views", " Right here right now");
+        addView(textView);
         addView(deleteButton);
-
     }
+
 
     @Override
     public boolean performClick() {
@@ -100,5 +97,4 @@ public class GoalButton extends ViewGroup {
             curLeft += curWidth;
         }
     }
-
 }

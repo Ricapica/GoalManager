@@ -24,6 +24,11 @@
     <string name="add_category_confirm">Add</string>
     <string name="add_category_cancel">Cancel</string>
 
+    <!--deleteCategory_popup-->
+    <string name="deleteCategory_header">Confirm DELETING this category.</string>
+    <string name="deleteCategory_confirm">Delete</string>
+    <string name="deleteCategory_cancel">Cancel</string>
+
     <!--modifyGoal_popup-->
     <string name="modifyGoal_header">Modify Goal:</string>
     <string name="modifyGoal_goal_title_hint">Goal Title</string>

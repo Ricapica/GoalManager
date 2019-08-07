@@ -16,6 +16,9 @@ public class DeleteButton extends View {
     Paint paint;
     Context context;
 
+    float widthRatio = .2f;
+    float heightRatio = 1;
+
     public DeleteButton(Context context) {
         super(context);
     }
@@ -29,7 +32,10 @@ public class DeleteButton extends View {
         this.context = context;
     }
 
-
+    public void SetWidthHeightRatio(float widthRatio, float heightRatio){
+        this.widthRatio = widthRatio;
+        this.heightRatio = heightRatio;
+    }
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
@@ -66,6 +72,6 @@ public class DeleteButton extends View {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
         int width = getMeasuredWidth();
         int height = getMeasuredHeight();
-        setMeasuredDimension((int)(width*.2),height);
+        setMeasuredDimension((int)(width*widthRatio),(int)(height*heightRatio));
     }
 }
