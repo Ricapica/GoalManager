@@ -1,11 +1,5 @@
 package com.goalmanager;
 
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.content.ContextCompat;
-import androidx.work.ExistingPeriodicWorkPolicy;
-import androidx.work.PeriodicWorkRequest;
-import androidx.work.WorkManager;
-
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -30,6 +24,12 @@ import android.widget.TimePicker;
 import android.widget.Toast;
 import android.widget.ToggleButton;
 
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
+import androidx.work.ExistingPeriodicWorkPolicy;
+import androidx.work.PeriodicWorkRequest;
+import androidx.work.WorkManager;
+
 import com.goalmanager.Views.GoalButton;
 import com.goalmanager.Views.WeekDaysToggleButton;
 
@@ -46,6 +46,7 @@ public class MainActivity extends AppCompatActivity {
     ArrayList<String> goalCategories;   //This list will be filled with all the categories a goal can belong to.
     ArrayList<String> goalTypes;        //This list will be filled with all the types a goal can be.
     ArrayList<String> reminderTypes;    //This list will be filled with all the types a goal reminder can be.
+
     LinearLayout mainList;              //This is the main View where the goals will appear.
     Context context;                    //The context of this activity. Needed to pass to other classes.
 
@@ -62,8 +63,6 @@ public class MainActivity extends AppCompatActivity {
 
         //Will hold the goals.
         mainList = findViewById(R.id.mainList);
-
-
     }
 
     @Override
@@ -91,6 +90,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void createGoalListeners(final Context context, final GoalButton b) {
+        //This will tell the button to open a window to show its details when it is clicked.
+        //It tells the button to open an edit window when it is long clicked.
+        //It tells the button to show its delete window when "delete" is pressed.
+
+
         b.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -202,7 +206,9 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
+
     public void createAddGoalListeners(final Context context, final Button b) {
+        //Makes the button show the window to add a new goal.
 
         b.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -247,7 +253,9 @@ public class MainActivity extends AppCompatActivity {
         });
 
     }
+
     public void createAddCategoryListeners(final Context context, final Button b) {
+        //Makes the button take the user to the Activity that manages Categories.
 
         b.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -261,13 +269,16 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void addGoal(Goal g){
+        //Adds a goal to the list of goals.
+
         g.category="General";           //Default Category.
         g.goalType=GoalTypes.SINGLE;    //Default Type.
         goals.add(g);
     }
 
-
     public void showGoalButtons(Context context){
+        //Displays the goals to the user from the list of goals.
+
         SaveGoals();
         mainList.removeAllViews();
         ViewGroup.LayoutParams layoutParams;
@@ -310,6 +321,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void SaveGoals(){
+        //Saves the goals in JSON format in the shared preferences.
+
         String saveString = Utils.SaveAsJSON(goals);
         SharedPreferences sharedPreferences = getSharedPreferences("sharedPrefs",MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
@@ -317,9 +330,9 @@ public class MainActivity extends AppCompatActivity {
         editor.apply();
     }
 
-
-
     private ArrayList<String> LoadGoalCategories(){
+        //Loads the goals from the shared preferences, or initializes the basic categories.
+
         ArrayList<String> categories = new ArrayList<>();
         SharedPreferences sharedPreferences = getSharedPreferences("sharedPrefs",MODE_PRIVATE);
         String allCategories = sharedPreferences.getString(context.getResources().getString(R.string.shared_categories),"");
@@ -334,13 +347,15 @@ public class MainActivity extends AppCompatActivity {
         }
         return categories;
     }
+
     private ArrayList<String> LoadReminderTypes(){
+        //Fills the list of reminder types.
+
         ArrayList<String> reminderTypes = new ArrayList<>();
         reminderTypes.add("x");
         reminderTypes.addAll(GoalReminderType.GetReminderTypes());
         return reminderTypes;
     }
-
 
     private void BuildGoalLayout(final Dialog dialog, final Goal goal){
         dialog.setContentView(R.layout.goal_layout);
@@ -608,6 +623,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public String getReminderString(Dialog dialog, ArrayList<WeekDaysToggleButton> weekList){
+        //Transforms the reminder days picked into a string.
+
         StringBuilder reply =new StringBuilder();
         Switch reminderSwitch = dialog.findViewById(R.id.toggleReminderSwitch);
         if(reminderSwitch.isChecked())
@@ -625,7 +642,10 @@ public class MainActivity extends AppCompatActivity {
         }
         return reply.toString();
     }
+
     public String getTimeString(TimePicker timePicker){
+        //Returns the time in string form;
+
         String hour = (""+timePicker.getHour()).length()==1?("0"+timePicker.getHour()):""+timePicker.getHour();
         String minute = (""+timePicker.getMinute()).length()==1?("0"+timePicker.getMinute()):""+timePicker.getMinute();
         Log.e("Rica","Time is: "+hour + minute);
@@ -633,6 +653,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void updateReminderViews(Dialog dialog, Goal goal){
+        //Updates the reminder section based on the reminder type selected.
+
         LinearLayout reminderDays = dialog.findViewById(R.id.reminderDays);
         TimePicker timePicker = dialog.findViewById(R.id.timePicker);
 
