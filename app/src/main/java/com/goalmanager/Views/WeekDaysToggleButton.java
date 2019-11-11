@@ -61,7 +61,7 @@ public class WeekDaysToggleButton extends View {
         paint.setTextAlign(Paint.Align.LEFT);
         paint.setTextSize((int)(viewHeight/2f));
 
-        canvas.drawText(day, (int)(viewWidth/4), (int)(viewHeight/1.5), paint);
+        canvas.drawText(day, (viewWidth/4), (int)(viewHeight/1.5), paint);
 
     }
 

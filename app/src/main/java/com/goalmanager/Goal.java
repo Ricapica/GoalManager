@@ -61,4 +61,6 @@ public class Goal {
     boolean SupportsReminders(){
         return goalType.equals(GoalTypes.SINGLE) || goalType.equals(GoalTypes.SUB_SINGLE);
     }
+
+
 }

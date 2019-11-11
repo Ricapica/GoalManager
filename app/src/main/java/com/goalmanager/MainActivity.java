@@ -21,23 +21,17 @@ import android.widget.Spinner;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.TimePicker;
-import android.widget.Toast;
 import android.widget.ToggleButton;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
-import androidx.work.ExistingPeriodicWorkPolicy;
-import androidx.work.PeriodicWorkRequest;
-import androidx.work.WorkManager;
 
 import com.goalmanager.Views.GoalButton;
 import com.goalmanager.Views.WeekDaysToggleButton;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Calendar;
 import java.util.Objects;
-import java.util.concurrent.TimeUnit;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -46,6 +40,8 @@ public class MainActivity extends AppCompatActivity {
     ArrayList<String> goalCategories;   //This list will be filled with all the categories a goal can belong to.
     ArrayList<String> goalTypes;        //This list will be filled with all the types a goal can be.
     ArrayList<String> reminderTypes;    //This list will be filled with all the types a goal reminder can be.
+
+    ReminderManager reminderManager;
 
     LinearLayout mainList;              //This is the main View where the goals will appear.
     Context context;                    //The context of this activity. Needed to pass to other classes.
@@ -63,6 +59,9 @@ public class MainActivity extends AppCompatActivity {
 
         //Will hold the goals.
         mainList = findViewById(R.id.mainList);
+
+        reminderManager = new ReminderManager(context);
+
     }
 
     @Override
@@ -75,6 +74,7 @@ public class MainActivity extends AppCompatActivity {
 
         //Load the goals.
         goals = Utils.LoadFromJSON(goalString);
+        reminderManager.setGoalsList(goals);
 
         //Load the categories.
         goalCategories = LoadGoalCategories();
@@ -87,6 +87,13 @@ public class MainActivity extends AppCompatActivity {
 
         //Prepare the layout params for the buttons.
         showGoalButtons(context);
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        //Sets the reminders of all goals if needed.
+        reminderManager.refreshAll();
     }
 
     public void createGoalListeners(final Context context, final GoalButton b) {
@@ -358,6 +365,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void BuildGoalLayout(final Dialog dialog, final Goal goal){
+        //This specifies everything that happens in the window that opens representing a goal.
+
         dialog.setContentView(R.layout.goal_layout);
 
         //Initialize the Title and Description from the goal.
@@ -574,36 +583,7 @@ public class MainActivity extends AppCompatActivity {
             setReminder.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Log.e("Rica","clicked to set a job");
 
-                    Calendar cal =Calendar.getInstance();
-                    long now = cal.getTimeInMillis();
-                    Log.e("Time: ",""+now);
-                    cal.set(Calendar.HOUR_OF_DAY,timePicker.getHour());
-                    cal.set(Calendar.MINUTE,timePicker.getMinute());
-                    cal.set(Calendar.SECOND,0);
-                    long targetTime=cal.getTimeInMillis();
-                    Log.e("Time we want is"," "+targetTime+" Difference: "+(targetTime-now)/1000);
-                    if(targetTime-now<0)
-                    {
-                        //If the time has passed already, the time will be the next day.
-                        targetTime+=1000*60*60*24;
-                    }
-                    switch(goal.reminderType) {
-                        case GoalReminderType.DAILY:
-
-                            PeriodicWorkRequest setReminder = new PeriodicWorkRequest.Builder(ReminderWorker.class,24,TimeUnit.HOURS)
-                                    .setInitialDelay(targetTime-now,TimeUnit.MILLISECONDS)
-                                    .addTag(goal.title)
-                                    .build();
-                            WorkManager.getInstance(context).enqueueUniquePeriodicWork(goal.title, ExistingPeriodicWorkPolicy.REPLACE,setReminder);
-                            break;
-
-                        case GoalReminderType.WEEKLY:
-                        default:
-                            break;
-                    }
-                    Toast.makeText(context,"Reminder Set!",Toast.LENGTH_SHORT).show();
                 }
             });
 
@@ -624,7 +604,11 @@ public class MainActivity extends AppCompatActivity {
 
     public String getReminderString(Dialog dialog, ArrayList<WeekDaysToggleButton> weekList){
         //Transforms the reminder days picked into a string.
-
+        //The format is explained here based on string positions
+        /*
+            0:      0 if reminders are off, 1 if reminders are on.
+            1-7:    1st letter of the day starting monday, if the day is set on, then the letter will be uppercase. Example: mTWTFsS
+         */
         StringBuilder reply =new StringBuilder();
         Switch reminderSwitch = dialog.findViewById(R.id.toggleReminderSwitch);
         if(reminderSwitch.isChecked())
