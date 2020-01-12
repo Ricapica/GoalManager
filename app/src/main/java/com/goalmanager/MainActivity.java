@@ -29,6 +29,8 @@ import androidx.core.content.ContextCompat;
 import com.goalmanager.Views.GoalButton;
 import com.goalmanager.Views.WeekDaysToggleButton;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Objects;
@@ -64,6 +66,7 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    //Activity Lifecycle
     @Override
     protected void onResume() {
         super.onResume();
@@ -96,7 +99,9 @@ public class MainActivity extends AppCompatActivity {
         reminderManager.refreshAll();
     }
 
-    public void createGoalListeners(final Context context, final GoalButton b) {
+
+    //Button Listeners
+    public void createGoalListeners(final Context context, @NotNull final GoalButton b) {
         //This will tell the button to open a window to show its details when it is clicked.
         //It tells the button to open an edit window when it is long clicked.
         //It tells the button to show its delete window when "delete" is pressed.
@@ -214,7 +219,7 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    public void createAddGoalListeners(final Context context, final Button b) {
+    public void createAddGoalListeners(final Context context, @NotNull final Button b) {
         //Makes the button show the window to add a new goal.
 
         b.setOnClickListener(new View.OnClickListener() {
@@ -261,7 +266,7 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    public void createAddCategoryListeners(final Context context, final Button b) {
+    public void createAddCategoryListeners(final Context context, @NotNull final Button b) {
         //Makes the button take the user to the Activity that manages Categories.
 
         b.setOnClickListener(new View.OnClickListener() {
@@ -275,7 +280,9 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    public void addGoal(Goal g){
+
+    //
+    public void addGoal(@NotNull Goal g){
         //Adds a goal to the list of goals.
 
         g.category="General";           //Default Category.
@@ -364,7 +371,7 @@ public class MainActivity extends AppCompatActivity {
         return reminderTypes;
     }
 
-    private void BuildGoalLayout(final Dialog dialog, final Goal goal){
+    private void BuildGoalLayout(@NotNull final Dialog dialog, @NotNull final Goal goal){
         //This specifies everything that happens in the window that opens representing a goal.
 
         dialog.setContentView(R.layout.goal_layout);
@@ -602,7 +609,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public String getReminderString(Dialog dialog, ArrayList<WeekDaysToggleButton> weekList){
+    public String getReminderString(@NotNull Dialog dialog, ArrayList<WeekDaysToggleButton> weekList){
         //Transforms the reminder days picked into a string.
         //The format is explained here based on string positions
         /*
@@ -627,7 +634,7 @@ public class MainActivity extends AppCompatActivity {
         return reply.toString();
     }
 
-    public String getTimeString(TimePicker timePicker){
+    public String getTimeString(@NotNull TimePicker timePicker){
         //Returns the time in string form;
 
         String hour = (""+timePicker.getHour()).length()==1?("0"+timePicker.getHour()):""+timePicker.getHour();
@@ -636,7 +643,7 @@ public class MainActivity extends AppCompatActivity {
         return hour + minute;
     }
 
-    private void updateReminderViews(Dialog dialog, Goal goal){
+    private void updateReminderViews(@NotNull Dialog dialog, @NotNull Goal goal){
         //Updates the reminder section based on the reminder type selected.
 
         LinearLayout reminderDays = dialog.findViewById(R.id.reminderDays);
