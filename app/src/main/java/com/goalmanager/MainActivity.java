@@ -487,12 +487,14 @@ public class MainActivity extends AppCompatActivity {
                         reminderView.setVisibility(View.VISIBLE);
                         goal.hasReminders=true;
                         SaveGoals();
+                        reminderManager.refreshAll();
                     } else {
                         //OFF
                         LinearLayout reminderView = dialog.findViewById(R.id.reminderViews);
                         reminderView.setVisibility(View.GONE);
                         goal.hasReminders=false;
                         SaveGoals();
+                        reminderManager.refreshAll();
                     }
                 }
             });
