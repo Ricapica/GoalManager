@@ -43,7 +43,7 @@ public class MainActivity extends AppCompatActivity {
     ArrayList<String> goalTypes;        //This list will be filled with all the types a goal can be.
     ArrayList<String> reminderTypes;    //This list will be filled with all the types a goal reminder can be.
 
-    ReminderManager reminderManager;
+    ReminderManager reminderManager;    //The ReminderManager will handle properly organising when goal reminders should appear.
 
     LinearLayout mainList;              //This is the main View where the goals will appear.
     Context context;                    //The context of this activity. Needed to pass to other classes.
@@ -51,6 +51,8 @@ public class MainActivity extends AppCompatActivity {
     //TODO- Online Syncing support.
     //TODO- Manage categories activity.
     //TODO- Sort Goals by category.
+
+    //Activity Lifecycle
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -62,11 +64,16 @@ public class MainActivity extends AppCompatActivity {
         //Will hold the goals.
         mainList = findViewById(R.id.mainList);
 
+        //Start the main worker to handle reminders.
         reminderManager = new ReminderManager(context);
-
+        reminderManager.setBaseReminder();
     }
 
-    //Activity Lifecycle
+    @Override
+    protected void onStart() {
+        super.onStart();
+    }
+
     @Override
     protected void onResume() {
         super.onResume();
@@ -77,7 +84,6 @@ public class MainActivity extends AppCompatActivity {
 
         //Load the goals.
         goals = Utils.LoadFromJSON(goalString);
-        reminderManager.setGoalsList(goals);
 
         //Load the categories.
         goalCategories = LoadGoalCategories();
@@ -90,13 +96,6 @@ public class MainActivity extends AppCompatActivity {
 
         //Prepare the layout params for the buttons.
         showGoalButtons(context);
-    }
-
-    @Override
-    protected void onStart() {
-        super.onStart();
-        //Sets the reminders of all goals if needed.
-        reminderManager.refreshAll();
     }
 
 
@@ -195,8 +194,9 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void onClick(View v) {
                         Log.e("Rica"," Deleting");
-                        goals.remove(b.goal);
+                        removeGoal(b.goal);
                         showGoalButtons(context);
+                        reminderManager.refreshAll();
                         dialog.dismiss();
                     }
                 });
@@ -281,15 +281,84 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    //
-    public void addGoal(@NotNull Goal g){
-        //Adds a goal to the list of goals.
+    //Persistent Data management
+    private void SaveGoals(){
+        //Saves the goals in JSON format in the shared preferences.
 
-        g.category="General";           //Default Category.
-        g.goalType=GoalTypes.SINGLE;    //Default Type.
-        goals.add(g);
+        String saveString = Utils.SaveAsJSON(goals);
+        SharedPreferences sharedPreferences = getSharedPreferences("sharedPrefs",MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putString(context.getResources().getString(R.string.shared_goals), saveString);
+        editor.apply();
     }
 
+    public String getReminderString(@NotNull Dialog dialog, ArrayList<WeekDaysToggleButton> weekList){
+        //Transforms the reminder days picked into a string.
+        //The format is explained here based on string positions
+        /*
+            Position:   |   Explanation:
+            0:          |   0 if reminders are off, 1 if reminders are on.
+            1-7:        |   1st letter of the day starting monday, if the day is set on, then the letter will be uppercase. Example: mTWTFsS
+         */
+        StringBuilder reply = new StringBuilder();
+        Switch reminderSwitch = dialog.findViewById(R.id.toggleReminderSwitch);
+        if(reminderSwitch.isChecked())
+        {
+            reply.append("1");
+            for(WeekDaysToggleButton day:weekList){
+                if(day.state){
+                    reply.append(day.day.toUpperCase());
+                }else{
+                    reply.append(day.day.toLowerCase());
+                }
+            }
+        }else{
+            reply.append("0");
+        }
+        return reply.toString();
+    }
+
+    public String getTimeString(@NotNull TimePicker timePicker){
+        //Returns the time in string form;
+
+        String hour = (""+timePicker.getHour()).length()==1?("0"+timePicker.getHour()):""+timePicker.getHour();
+        String minute = (""+timePicker.getMinute()).length()==1?("0"+timePicker.getMinute()):""+timePicker.getMinute();
+        Log.e("Rica","Time is: "+hour + minute);
+        return hour + minute;
+    }
+
+
+    //Core Data Acquisition
+    private ArrayList<String> LoadGoalCategories(){
+        //Loads the goals from the shared preferences, or initializes the basic categories.
+
+        ArrayList<String> categories = new ArrayList<>();
+        SharedPreferences sharedPreferences = getSharedPreferences("sharedPrefs",MODE_PRIVATE);
+        String allCategories = sharedPreferences.getString(context.getResources().getString(R.string.shared_categories),"");
+        if(allCategories.length()>0) {
+            String[] categoryArray = allCategories.split(";");
+            categories.addAll(Arrays.asList(categoryArray));
+        }
+        else{
+            //Default initialization.
+            categories.add("x");
+            categories.add("General");
+        }
+        return categories;
+    }
+
+    private ArrayList<String> LoadReminderTypes(){
+        //Fills the list of reminder types.
+
+        ArrayList<String> reminderTypes = new ArrayList<>();
+        reminderTypes.add("x");
+        reminderTypes.addAll(GoalReminderType.GetReminderTypes());
+        return reminderTypes;
+    }
+
+
+
+    //UI display
     public void showGoalButtons(Context context){
         //Displays the goals to the user from the list of goals.
 
@@ -332,43 +401,6 @@ public class MainActivity extends AppCompatActivity {
         Utils.LoadFromJSON(saved);
         mainList.addView(addGoalButton);
         mainList.addView(addCategoryButton);
-    }
-
-    private void SaveGoals(){
-        //Saves the goals in JSON format in the shared preferences.
-
-        String saveString = Utils.SaveAsJSON(goals);
-        SharedPreferences sharedPreferences = getSharedPreferences("sharedPrefs",MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putString(context.getResources().getString(R.string.shared_goals), saveString);
-        editor.apply();
-    }
-
-    private ArrayList<String> LoadGoalCategories(){
-        //Loads the goals from the shared preferences, or initializes the basic categories.
-
-        ArrayList<String> categories = new ArrayList<>();
-        SharedPreferences sharedPreferences = getSharedPreferences("sharedPrefs",MODE_PRIVATE);
-        String allCategories = sharedPreferences.getString(context.getResources().getString(R.string.shared_categories),"");
-        if(allCategories.length()>0) {
-            String[] categoryArray = allCategories.split(";");
-            categories.addAll(Arrays.asList(categoryArray));
-        }
-        else{
-            //Default initialization.
-            categories.add("x");
-            categories.add("General");
-        }
-        return categories;
-    }
-
-    private ArrayList<String> LoadReminderTypes(){
-        //Fills the list of reminder types.
-
-        ArrayList<String> reminderTypes = new ArrayList<>();
-        reminderTypes.add("x");
-        reminderTypes.addAll(GoalReminderType.GetReminderTypes());
-        return reminderTypes;
     }
 
     private void BuildGoalLayout(@NotNull final Dialog dialog, @NotNull final Goal goal){
@@ -435,9 +467,10 @@ public class MainActivity extends AppCompatActivity {
         LinearLayout reminderView = dialog.findViewById(R.id.reminderViews);
         if(goal.SupportsReminders()) {
             final Switch reminder_switch = dialog.findViewById(R.id.toggleReminderSwitch);
+
+            //Set the switch On or Off depending on what it last was.
             if(goal.hasReminders){
                 reminder_switch.setChecked(true);
-
                 reminderView.setVisibility(View.VISIBLE);
             }else{
                 reminder_switch.setChecked(false);
@@ -570,7 +603,7 @@ public class MainActivity extends AppCompatActivity {
             reminderDays.addView(saturdayToggle);
             reminderDays.addView(sundayToggle);
 
-            //Get the time set
+            //Get the time set on the goal
             final TimePicker timePicker = dialog.findViewById(R.id.timePicker);
             if(goal.timeData.length()>0){
                 timePicker.setHour(Integer.parseInt(goal.timeData.substring(0,2)));
@@ -590,7 +623,9 @@ public class MainActivity extends AppCompatActivity {
             setReminder.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-
+                    SaveGoals();
+                    reminderManager.refreshAll();
+                    Log.e("MainActivity","Clicked to set a reminder");
                 }
             });
 
@@ -607,40 +642,6 @@ public class MainActivity extends AppCompatActivity {
             });
             updateReminderViews(dialog, goal);
         }
-    }
-
-    public String getReminderString(@NotNull Dialog dialog, ArrayList<WeekDaysToggleButton> weekList){
-        //Transforms the reminder days picked into a string.
-        //The format is explained here based on string positions
-        /*
-            0:      0 if reminders are off, 1 if reminders are on.
-            1-7:    1st letter of the day starting monday, if the day is set on, then the letter will be uppercase. Example: mTWTFsS
-         */
-        StringBuilder reply =new StringBuilder();
-        Switch reminderSwitch = dialog.findViewById(R.id.toggleReminderSwitch);
-        if(reminderSwitch.isChecked())
-        {
-            reply.append("1");
-            for(WeekDaysToggleButton day:weekList){
-                if(day.state){
-                    reply.append(day.day.toUpperCase());
-                }else{
-                    reply.append(day.day.toLowerCase());
-                }
-            }
-        }else{
-            reply.append("0");
-        }
-        return reply.toString();
-    }
-
-    public String getTimeString(@NotNull TimePicker timePicker){
-        //Returns the time in string form;
-
-        String hour = (""+timePicker.getHour()).length()==1?("0"+timePicker.getHour()):""+timePicker.getHour();
-        String minute = (""+timePicker.getMinute()).length()==1?("0"+timePicker.getMinute()):""+timePicker.getMinute();
-        Log.e("Rica","Time is: "+hour + minute);
-        return hour + minute;
     }
 
     private void updateReminderViews(@NotNull Dialog dialog, @NotNull Goal goal){
@@ -683,5 +684,20 @@ public class MainActivity extends AppCompatActivity {
 
                 break;
         }
+    }
+
+
+    //Data management
+    public void addGoal(@NotNull Goal g){
+        //Adds a goal to the list of goals.
+        //This does not add a button to represent the goal.
+
+        g.category="General";           //Default Category.
+        g.goalType=GoalTypes.SINGLE;    //Default Type.
+        goals.add(g);
+    }
+
+    public void removeGoal(@NotNull Goal g){
+        goals.remove(g);
     }
 }
